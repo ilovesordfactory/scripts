@@ -184,8 +184,12 @@ end
 local function farm_autoUpgradeMas()
     if not Toggles.farm_autoMas.Value then return end 
         
+    local levelText = getGui():WaitForChild("EXP"):WaitForChild("BG"):WaitForChild("LevelN").Text:gsub("%D", "")
+
     while Toggles.farm_autoMas.Value do task.wait(1)
-        
+        if tonumber(levelText) == 50 then 
+            game:GetService("ReplicatedStorage").GlobalUsedRemotes.UpgradeMas:FireServer()
+        end 
     end 
 end
 --chest variables
