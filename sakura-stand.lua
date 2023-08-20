@@ -10,12 +10,29 @@ kickHook = hookfunction(getrawmetatable(game.Players.LocalPlayer).__namecall, fu
 
     return kickHook(self, ...)
 end)
+
+local antiHook 
+
+antiHook = hookmetamethod(game, "__index", newcclosure(function(...)
+    local self, k = ...
+    
+    if not checkcaller() and k == "WalkSpeed" and self.Name == "Humanoid" and self:IsA("Humanoid") then
+        return 16;
+    elseif not checkcaller() and k == "JumpPower" and self.Name == "Humanoid" and self:IsA("Humanoid") then
+        return 50;
+    elseif not checkcaller() and k == "Gravity" and self.Name == "Workspace" then
+        return 196.2;
+    end
+    
+    return antiHook(...)
+end))
 --services variables
 repeat task.wait() until game:IsLoaded()
 
 local replicatedStorage = game:GetService("ReplicatedStorage")
 local tweenService = game:GetService("TweenService")
 local pathfindingService = game:GetService("PathfindingService")
+local virtualInputManager = game:GetService("VirtualInputManager")
 --folders variables
 local itemsFolder = workspace:WaitForChild("Item")
 --window variables
@@ -123,6 +140,7 @@ local function farm_activateFarm()
     if not Toggles.farm_farmMobs.Value then return end 
 
     while Toggles.farm_farmMobs.Value do task.wait(0.1)
+        print(farmingMob)
         local targetMob 
         local skillsFolder = farm_getSkillsFolder()
 
@@ -138,7 +156,7 @@ local function farm_activateFarm()
         farmingMob = true 
 
         repeat task.wait()
-            getRoot().CFrame = targetMob:FindFirstChild("HumanoidRootPart").CFrame * CFrame.new(0, 0, 5)
+            getRoot().CFrame = targetMob:FindFirstChild("HumanoidRootPart").CFrame * CFrame.new(0, 0, 10)
             getHumanoid():ChangeState(11)
 
             for skill, use in Options.farm_selectSkills.Value do
@@ -184,9 +202,9 @@ end
 local function farm_autoUpgradeMas()
     if not Toggles.farm_autoMas.Value then return end 
         
-    local levelText = getGui():WaitForChild("EXP"):WaitForChild("BG"):WaitForChild("LevelN").Text:gsub("%D", "")
-
     while Toggles.farm_autoMas.Value do task.wait(1)
+        local levelText = getGui():WaitForChild("EXP"):WaitForChild("BG"):WaitForChild("LevelN").Text:gsub("%D", "")
+
         if tonumber(levelText) == 50 then 
             game:GetService("ReplicatedStorage").GlobalUsedRemotes.UpgradeMas:FireServer()
         end 
@@ -195,6 +213,24 @@ end
 --chest variables
 
 --chest functions
+local function getPrompt(box)
+    return box:FindFirstChildWhichIsA("ProximityPrompt")
+end
+
+local function resetCharacter()
+    virtualInputManager:SendKeyEvent(true, Enum.KeyCode.Escape, false, getGui())
+    task.wait(0.1)
+    virtualInputManager:SendKeyEvent(false, Enum.KeyCode.Escape, false, getGui())
+    task.wait(0.1)
+    virtualInputManager:SendKeyEvent(true, Enum.KeyCode.R, false, getGui())
+    task.wait(0.1)
+    virtualInputManager:SendKeyEvent(false, Enum.KeyCode.R, false, getGui())
+    task.wait(0.1)
+    virtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, getGui())
+    task.wait(0.1)
+    virtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, getGui())
+end
+
 local function getKeys()
     local keys = 0
     
@@ -226,7 +262,7 @@ local function activateChestFarm()
             end 
 
             if moveTo == nil then
-                if not itemsFolder:FindFirstChild("Box") then 
+                if (itemsFolder:FindFirstChild("Barrel")) and (not itemsFolder:FindFirstChild("Chest") or getKeys() == 0) then 
                     moveTo = getClosest("Barrel", itemsFolder)
                 elseif not itemsFolder:FindFirstChild("Chest") or getKeys() == 0 then 
                     moveTo = getClosest('Box', itemsFolder)
@@ -239,7 +275,7 @@ local function activateChestFarm()
                 return 
             end 
 
-            if getMag(moveTo) >= 500 then 
+            if getMag(moveTo) >= 1000 then 
                 moveTo:Destroy()
                 return 
             end 
@@ -285,7 +321,7 @@ local function activateChestFarm()
 
             task.wait(0.5)
 
-            repeat task.wait()
+            repeat task.wait(0.5)
                 local prompt = moveTo:FindFirstChildWhichIsA("ProximityPrompt")
 
                 if prompt then 
@@ -298,7 +334,6 @@ local function activateChestFarm()
                     moveTo:Destroy()
                 end 
 
-                print(getMag(moveTo))
             until Toggles.chest_farmChest.Value == false or moveTo == nil or moveTo.Parent == nil or getMag(moveTo) >= 10
         end)
 
@@ -334,11 +369,13 @@ end
 local function shop_activateSell()
     if not Toggles.shop_autoSell.Value then return end 
     
-    while Toggles.shop_autoSell.Value do task.wait()
-        for item, sell in Options.shop_selectedItems.Value do 
-            if not sell then continue end 
+    while Toggles.shop_autoSell.Value do task.wait(5)
+        if #game.Players.LocalPlayer.Backpack:GetChildren() == 0 then continue end 
 
-            sellRemote:FireServer(item)
+        for _ ,v in game.Players.LocalPlayer.Backpack:GetChildren() do 
+            if not Options.shop_selectedItems.Value[v.Name] then continue end 
+
+            sellRemote:FireServer(v.Name)
         end 
     end 
 end
@@ -346,7 +383,7 @@ end
 local function shop_activateBuy()
     if not Toggles.shop_autoBuy.Value then return end 
 
-    while Toggles.shop_autoBuy.Value do task.wait()
+    while Toggles.shop_autoBuy.Value do task.wait(0.1)
         pcall(function()
             for item, buy in Options.shop_buySelect.Value do 
                 if not buy then continue end 
