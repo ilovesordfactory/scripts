@@ -102,7 +102,7 @@ end
 
 local function farm_getMobs()
     local bossGui = getGui():WaitForChild("BossHP")
-    local mobs = {"Bandit", "Thug"}
+    local mobs = {"Bandit", "Thug", "Attacking Dummy"}
 
     for _, v in bossGui:GetDescendants() do 
         if not v:IsA("TextLabel") then continue end 
@@ -297,7 +297,9 @@ local function activateChestFarm()
                 else 
                     moveTo:Destroy()
                 end 
-            until Toggles.chest_farmChest.Value == false or moveTo == nil or moveTo.Parent == nil or getMag(moveTo) >= 20
+
+                print(getMag(moveTo))
+            until Toggles.chest_farmChest.Value == false or moveTo == nil or moveTo.Parent == nil or getMag(moveTo) >= 10
         end)
 
         if not suc then print(err) end
