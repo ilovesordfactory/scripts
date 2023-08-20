@@ -140,7 +140,6 @@ local function farm_activateFarm()
     if not Toggles.farm_farmMobs.Value then return end 
 
     while Toggles.farm_farmMobs.Value do task.wait(0.1)
-        print(farmingMob)
         local targetMob 
         local skillsFolder = farm_getSkillsFolder()
 
@@ -151,12 +150,12 @@ local function farm_activateFarm()
             targetMob = livingFolder:FindFirstChild(mob)
         end 
 
-        if not targetMob then farmingMob = false return end 
+        if not targetMob then farmingMob = false continue end 
 
         farmingMob = true 
 
         repeat task.wait()
-            getRoot().CFrame = targetMob:FindFirstChild("HumanoidRootPart").CFrame * CFrame.new(0, 0, 10)
+            getRoot().CFrame = targetMob:FindFirstChild("HumanoidRootPart").CFrame * CFrame.new(0, 0, 7.5)
             getHumanoid():ChangeState(11)
 
             for skill, use in Options.farm_selectSkills.Value do
@@ -188,9 +187,9 @@ local function farm_activateFarm()
             if not v:IsA("BasePart") then continue end 
             if getMag(v) >= 100 then continue end 
 
-            getRoot().CFrame = v.CFrame 
-
             repeat task.wait()
+                getRoot().CFrame = v.CFrame 
+                
                 if v:FindFirstChildWhichIsA("ProximityPrompt", true) then
                     fireproximityprompt(v:FindFirstChildWhichIsA("ProximityPrompt", true))
                 end
@@ -272,11 +271,6 @@ local function activateChestFarm()
             end
 
             if not moveTo then 
-                return 
-            end 
-
-            if getMag(moveTo) >= 1000 then 
-                moveTo:Destroy()
                 return 
             end 
 
