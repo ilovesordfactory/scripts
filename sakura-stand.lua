@@ -286,16 +286,18 @@ local function activateChestFarm()
             task.wait(0.5)
 
             repeat task.wait()
-                if moveTo:FindFirstChildWhichIsA("ProximityPrompt", true) then 
-                    fireproximityprompt(moveTo:FindFirstChildWhichIsA("ProximityPrompt", true))
+                local prompt = moveTo:FindFirstChildWhichIsA("ProximityPrompt")
 
-                    moveTo:FindFirstChildWhichIsA("ProximityPrompt", true):GetPropertyChangedSignal("Enabled"):Once(function()
+                if prompt then 
+                    prompt:GetPropertyChangedSignal("Enabled"):Once(function()
                         moveTo:Destroy()
                     end)
+
+                    fireproximityprompt(prompt)
                 else 
                     moveTo:Destroy()
                 end 
-            until moveTo == nil or moveTo.Parent == nil or getMag(moveTo) >= 20
+            until Toggles.chest_farmChest.Value == false or moveTo == nil or moveTo.Parent == nil or getMag(moveTo) >= 20
         end)
 
         if not suc then print(err) end
