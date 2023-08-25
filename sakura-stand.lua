@@ -137,7 +137,7 @@ local function farm_getMobs()
 end
 
 local function farm_activateFarm()
-    if not Toggles.farm_farmMobs.Value then return end 
+    if not Toggles.farm_farmMobs.Value then farmingMob = false return end 
 
     while Toggles.farm_farmMobs.Value do task.wait(0.1)
         local targetMob 
@@ -278,18 +278,6 @@ local function activateChestFarm()
                 moveTo:Destroy()
                 return
             end
-
-            local noClip = game:GetService("RunService").RenderStepped:Connect(function()
-                pcall(function()
-                    getHumanoid().WalkSpeed = Options.chest_walkSpeed.Value
-
-                    for i, v in getCharacter():GetChildren() do
-                        if v:IsA("BasePart") then
-                            v.CanCollide = false
-                        end
-                    end
-                end)
-            end)
 
             local path = pathfindingService:CreatePath()
             path:ComputeAsync(getRoot().Position, moveTo.Position + Vector3.new(5, 0, 0))
