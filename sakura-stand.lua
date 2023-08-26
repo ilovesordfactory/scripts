@@ -111,6 +111,8 @@ local function farm_getSkills()
     local skills = {}
 
     for _, v in skillsFolder:GetChildren() do 
+        if tostring(v) == "Summon" then continue end 
+
         table.insert(skills, v.Name)
     end 
 
@@ -134,6 +136,22 @@ local function farm_getMobs()
     end 
 
     return mobs
+end
+
+local function farm_activateAutoSummon()
+    if not Toggles.farm_autoSummonStand.Value then return end 
+
+    while Toggles.farm_autoSummonStand.Value do task.wait(0.1)
+        if getCharacter():FindFirstChild("CDValues"):FindFirstChild("Summoned") then continue end 
+    
+        local skillsFolder = farm_getSkillsFolder()
+
+        if skillsFolder:FindFirstChild("Summon") then
+            skillsFolder.Summon:FireServer()
+        else 
+            print('Debug: summon function not found!')
+        end
+    end 
 end
 
 local function farm_activateFarm()
@@ -169,9 +187,9 @@ local function farm_activateFarm()
             if getGui():WaitForChild("QuickTimeEvent"):FindFirstChildWhichIsA("TextButton") then 
                 local key = getGui():WaitForChild("QuickTimeEvent"):FindFirstChildWhichIsA("TextButton").Text
 
-                virutalInputManager:SendKeyEvent(true, Enum.KeyCode[key], false, getGui())
+                virtualInputManager:SendKeyEvent(true, Enum.KeyCode[key], false, getGui())
                 task.wait()
-                virutalInputManager:SendKeyEvent(false, Enum.KeyCode[key], false, getGui())
+                virtualInputManager:SendKeyEvent(false, Enum.KeyCode[key], false, getGui())
             end 
 
             if targetMob:FindFirstChild("Humanoid") == nil or targetMob:FindFirstChild("Humanoid").Health <= 0 then 
@@ -289,6 +307,12 @@ local function activateChestFarm()
 
             local walkSpeed = game:GetService("RunService").RenderStepped:Connect(function()
                 getHumanoid().WalkSpeed = Options.chest_walkSpeed.Value
+
+                for _, v in getCharacter():GetDescendants() do 
+                    if not v:IsA("BasePart") then continue end 
+                    
+                    v.CanCollide = false 
+                end 
             end)
 
 
@@ -309,6 +333,12 @@ local function activateChestFarm()
             walkSpeed:Disconnect()
 
             task.wait(0.2)
+
+            for _, v in getCharacter():GetDescendants() do 
+                if not v:IsA("BasePart") then continue end 
+                
+                v.CanCollide = true 
+            end 
 
             repeat task.wait(0.5)
                 local prompt = moveTo:FindFirstChildWhichIsA("ProximityPrompt")
@@ -406,6 +436,7 @@ options:AddButton({Text = "Refresh Skills", Func = function()
     Options.farm_selectSkills.Values = farm_getSkills()
     Options.farm_selectSkills:SetValues()
 end})
+toggles:AddToggle('farm_autoSummonStand', {Text = "Auto Summon Stand", Default = false, Callback = farm_activateAutoSummon})
 toggles:AddDivider()
 toggles:AddToggle('farm_autoMas', {Text = "Auto Upgrade Mastery", Default = false, Callback = farm_autoUpgradeMas})
 --chest_ui variables
