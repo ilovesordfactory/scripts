@@ -142,15 +142,19 @@ local function farm_activateAutoSummon()
     if not Toggles.farm_autoSummonStand.Value then return end 
 
     while Toggles.farm_autoSummonStand.Value do task.wait(0.1)
-        if getCharacter():FindFirstChild("CDValues"):FindFirstChild("Summoned") then continue end 
-    
-        local skillsFolder = farm_getSkillsFolder()
+        pcall(function()
+            if not getCharacter() then return end
+            if not getCharacter():FindFirstChild("CDValues") then return end  
+            if getCharacter():FindFirstChild("CDValues"):FindFirstChild("Summoned") then return end 
+        
+            local skillsFolder = farm_getSkillsFolder()
 
-        if skillsFolder:FindFirstChild("Summon") then
-            skillsFolder.Summon:FireServer()
-        else 
-            print('Debug: summon function not found!')
-        end
+            if skillsFolder:FindFirstChild("Summon") then
+                skillsFolder.Summon:FireServer()
+            else 
+                print('Debug: summon function not found!')
+            end
+        end)
     end 
 end
 
@@ -292,23 +296,13 @@ local function activateChestFarm()
                 return 
             end 
 
-            if moveTo:FindFirstChildWhichIsA("ProximityPrompt", true) and moveTo:FindFirstChildWhichIsA("ProximityPrompt", true).Enabled == false then
-                moveTo:Destroy()
-                return
-            end
-
             local path = pathfindingService:CreatePath()
             path:ComputeAsync(getRoot().Position, moveTo.Position + Vector3.new(5, 0, 0))
-
-            if path.Status ~= Enum.PathStatus.Success then 
-                moveTo:Destroy()
-                return 
-            end 
 
             local walkSpeed = game:GetService("RunService").RenderStepped:Connect(function()
                 getHumanoid().WalkSpeed = Options.chest_walkSpeed.Value
 
-                for _, v in getCharacter():GetDescendants() do 
+                for _, v in getCharacter():GetChildren() do 
                     if not v:IsA("BasePart") then continue end 
                     
                     v.CanCollide = false 
@@ -334,7 +328,7 @@ local function activateChestFarm()
 
             task.wait(0.2)
 
-            for _, v in getCharacter():GetDescendants() do 
+            for _, v in getCharacter():GetChildren() do 
                 if not v:IsA("BasePart") then continue end 
                 
                 v.CanCollide = true 
