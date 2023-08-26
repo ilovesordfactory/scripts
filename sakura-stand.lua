@@ -287,6 +287,11 @@ local function activateChestFarm()
                 return 
             end 
 
+            local walkSpeed = game:GetService("RunService").RenderStepped:Connect(function()
+                getHumanoid().WalkSpeed = Options.chest_walkSpeed.Value
+            end)
+
+
             for _, v in path:GetWaypoints() do 
                 if farmingMob then break end 
                 if getHumanoid().Health == 0 then break end 
@@ -301,7 +306,9 @@ local function activateChestFarm()
                 end)
             end 
 
-            task.wait(0.5)
+            walkSpeed:Disconnect()
+
+            task.wait(0.2)
 
             repeat task.wait(0.5)
                 local prompt = moveTo:FindFirstChildWhichIsA("ProximityPrompt")
