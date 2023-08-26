@@ -96,6 +96,7 @@ local function farm_getSkillsFolder()
     
     local firstPart = tostring(standName:match("(%a+)%s"))
     local noSpaces = tostring(standName:gsub('%s', ""))
+    local secondPart = tostring(standName:match("%a+%s(%a+)"))
         
     if replicatedStorage:FindFirstChild(standName.."Remote") then 
         return  replicatedStorage:FindFirstChild(standName.."Remote")
@@ -103,6 +104,8 @@ local function farm_getSkillsFolder()
         return replicatedStorage:FindFirstChild(firstPart.."Remote")
     elseif replicatedStorage:FindFirstChild(noSpaces.."Remote") then
         return replicatedStorage:FindFirstChild(noSpaces.."Remote")
+    elseif replicatedStorage:FindFirstChild(secondPart.."Remote") then
+        return replicatedStorage:FindFirstChild(secondPart.."Remote")
     end
 end
 
